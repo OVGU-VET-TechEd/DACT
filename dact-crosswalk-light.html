@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="de" data-lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DACT-Framework — Interaktiver Crosswalk / Interactive Crosswalk (Light)</title>
+<style>
+  :root{
+    --bg:#ffffff; --bg2:#f4f7fb; --panel:#ffffff; --panel2:#eef2f8;
+    --accent:#0b5fa8; --accent-dark:#0b5fa8; --accent-text:#ffffff; --green:#0a7d55; --amber:#b5720a;
+    --text:#101826; --text-dim:#33465c; --text-mute:#5c7188; --border:#c7d3e0;
+    --shadow:0 1px 3px rgba(16,24,38,.08);
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font-family:"Segoe UI",Calibri,Helvetica,Arial,sans-serif;
+    line-height:1.6; padding:0 0 60px 0;
+  }
+  header{
+    background:linear-gradient(135deg,#eef4fb,#e3edf8 60%,#dbe8f6);
+    border-bottom:1px solid var(--border);
+    padding:36px 24px 28px; text-align:center;
+  }
+  header h1{margin:0 0 6px; font-size:1.7rem; color:#0a1e33; letter-spacing:.01em;}
+  header .subtitle{color:var(--accent); font-size:1rem; font-weight:700;}
+  header .meta{color:var(--text-mute); font-size:.8rem; margin-top:10px;}
+  .wrap{max-width:1180px; margin:0 auto; padding:0 24px;}
+  .langtoggle{
+    position:fixed; top:14px; right:18px; z-index:50;
+    display:flex; gap:0; border:1px solid var(--border); border-radius:8px; overflow:hidden;
+  }
+  .langtoggle{box-shadow:var(--shadow);}
+  .langtoggle button{
+    background:var(--panel2); color:var(--text-dim); border:none; padding:7px 14px;
+    font-size:.75rem; font-weight:700; cursor:pointer; letter-spacing:.03em;
+  }
+  .langtoggle button.act{background:var(--accent-dark); color:#fff;}
+
+  section{margin:38px 0;}
+  h2{font-size:1.25rem; color:#0a1e33; border-left:4px solid var(--accent); padding-left:12px; margin-bottom:14px;}
+  h3{font-size:1.02rem; color:var(--accent); margin:22px 0 8px;}
+  p{color:var(--text-dim); font-size:.92rem;}
+  .lead{color:var(--text); font-size:.98rem;}
+
+  .info-box{background:#eaf3fb; border-left:4px solid var(--accent);
+             border-radius:0 10px 10px 0; padding:14px 18px; margin:16px 0; font-size:.87rem; color:var(--text-dim);}
+  .ok-box{background:#e9f6f0; border-left:4px solid var(--green);
+          border-radius:0 10px 10px 0; padding:14px 18px; margin:16px 0; font-size:.87rem; color:var(--text-dim);}
+
+  table.progression{width:100%; border-collapse:collapse; font-size:.83rem; margin:16px 0; box-shadow:var(--shadow);}
+  table.progression th, table.progression td{border:1px solid var(--border); padding:9px 12px; text-align:left; vertical-align:top;}
+  table.progression th{background:var(--panel2); color:var(--accent); font-size:.75rem; text-transform:uppercase; letter-spacing:.03em;}
+  table.progression td{color:var(--text-dim); background:var(--bg);}
+
+  /* ===== Crosswalk widget (pattern reused from ki-workshop-liv-3) ===== */
+  #crosswalk-app{background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:20px 22px; margin-top:10px; box-shadow:var(--shadow);}
+  .cw-label{margin-bottom:10px; font-size:.8rem; color:var(--text-mute); text-transform:uppercase; letter-spacing:.04em;}
+  #cw-areas{display:flex; flex-wrap:wrap; gap:4px;}
+  .cw-btn{padding:7px 13px; border-radius:8px; border:1px solid var(--border);
+          background:#ffffff; color:var(--text-dim); font-size:.78rem; cursor:pointer;
+          font-weight:600; margin:3px; transition:.2s;}
+  .cw-btn:hover{border-color:var(--accent); color:var(--accent);}
+  .cw-btn.act{background:var(--accent-dark); border-color:var(--accent-dark); color:#fff;}
+
+  .cw-stagebar{background:#eaf3fb; border:1px solid #cfe2f4;
+     border-radius:10px; padding:12px 16px; margin:16px 0;}
+  #cw-stagename{font-size:1.05rem; font-weight:800; color:var(--accent); margin-bottom:6px;}
+  #cw-stage{width:100%; accent-color:var(--accent);}
+  .cw-stagelabels{display:flex; justify-content:space-between; font-size:.72rem; color:var(--text-mute); margin-top:4px;}
+
+  .cw-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:8px; margin:14px 0;}
+  .cw-col{background:#ffffff; border-radius:10px; padding:12px; border:1px solid var(--border); border-top:4px solid var(--accent); font-size:.78rem; box-shadow:var(--shadow);}
+  .cw-col-hd{font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; margin-bottom:4px;}
+  .cw-col-lvl{font-size:.68rem; color:var(--text-mute); font-style:italic; margin-bottom:6px;}
+  .cw-col-txt{line-height:1.5; color:#1a2534;}
+  .cw-tag{display:inline-block; font-size:.62rem; background:#e3edf8;
+          color:var(--accent); padding:1px 5px; border-radius:4px; margin:2px 1px; font-weight:600;}
+  .cw-synth{background:#e9f6f0; border-left:4px solid var(--green);
+            border-radius:0 10px 10px 0; padding:12px 16px; font-size:.83rem; line-height:1.55; color:#173a2c; margin-top:14px;}
+  .cw-synth strong{color:var(--green);}
+
+  @media (max-width:1000px){
+    .cw-grid{grid-template-columns:repeat(2,1fr);}
+  }
+  @media (max-width:560px){
+    .cw-grid{grid-template-columns:1fr;}
+    header h1{font-size:1.3rem;}
+  }
+
+  footer{text-align:center; color:var(--text-mute); font-size:.75rem; margin-top:50px; padding-top:18px; border-top:1px solid var(--border); padding-bottom:10px;}
+  [data-en]{display:none;}
+  html[data-lang="en"] [data-de]{display:none;}
+  html[data-lang="en"] [data-en]{display:inline;}
+  html[data-lang="en"] [data-en-block]{display:block;}
+</style>
+</head>
+<body>
+
+<div class="langtoggle">
+  <button id="btn-de" class="act" onclick="setLang('de')">DE</button>
+  <button id="btn-en" onclick="setLang('en')">EN</button>
+</div>
+
+<header>
+  <h1><span data-de>DACT-Framework</span><span data-en>The DACT Framework</span></h1>
+  <div class="subtitle">
+    <span data-de>Interaktiver Crosswalk: Sechs Kompetenzbereiche × drei Niveaus × fünf Referenzrahmen</span>
+    <span data-en>Interactive crosswalk: six competency areas × three levels × five reference frameworks</span>
+  </div>
+  <div class="meta">
+    <span data-de>Arbeitskreis Digitalisierung im Lehramt · ZLB · Otto-von-Guericke-Universität Magdeburg · Juni 2026</span>
+    <span data-en>Arbeitskreis Digitalisierung im Lehramt · ZLB · Otto-von-Guericke University Magdeburg · June 2026</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+<section>
+  <h2><span data-de>1 · Was ist das DACT-Framework?</span><span data-en>1 · What is the DACT Framework?</span></h2>
+  <p class="lead" data-de>
+    Das <strong>Digital &amp; AI Competency Framework for University Teacher Trainers (DACT)</strong> synthetisiert
+    die wichtigsten internationalen Referenzrahmen — DigCompEdu (2017/2023), die UNESCO AI- und ICT-Frameworks (2018/2025),
+    die KMK-Strategiepapiere (2021/2024), den EU AI Act (2024) sowie das neue OECD/EU AILit-Framework (2026) — zu
+    <strong>sechs handlungsleitenden Kompetenzbereichen</strong> für Lehrkräftebildner:innen an Hochschulen. Es ist kein
+    weiterer Parallelrahmen, sondern eine <em>Verdichtung</em>: Jeder DACT-Bereich bündelt konvergente Aussagen mehrerer
+    Quellrahmen zu einem operationalisierbaren Kompetenzprofil.
+  </p>
+  <p class="lead" data-en>
+    The <strong>Digital &amp; AI Competency Framework for University Teacher Trainers (DACT)</strong> synthesises the
+    major international reference frameworks — DigCompEdu (2017/2023), the UNESCO AI and ICT frameworks (2018/2025),
+    the KMK strategy papers (2021/2024), the EU AI Act (2024), and the new OECD/EU AILit Framework (2026) — into
+    <strong>six actionable competency areas</strong> for university teacher trainers. It is not another parallel
+    framework, but a <em>synthesis</em>: each DACT area bundles convergent statements from several source frameworks
+    into one operationalisable competency profile.
+  </p>
+
+  <div class="info-box">
+    <span data-de>
+      <strong>Warum eine Synthese?</strong> Kein einzelner Rahmen deckt allein ab, was Hochschullehrende in der
+      Lehrkräftebildung heute brauchen: DigCompEdu ist pädagogisch stark, aber technisch dünn; die ICT-CFT ist
+      technologieneutral, aber vor-KI; UNESCO AI-CFT ist ethisch differenziert, aber ohne rechtlichen Unterbau; der
+      EU AI Act ist bindendes Recht, aber keine Kompetenzsprache; das OECD/EU-AILit-Framework ist schülerzentriert,
+      aber ohne Professionsbezug. DACT übersetzt diese fünf Perspektiven in eine gemeinsame Struktur.
+    </span>
+    <span data-en>
+      <strong>Why a synthesis?</strong> No single framework alone covers what university teacher educators need today:
+      DigCompEdu is pedagogically strong but technically thin; the ICT-CFT is technology-neutral but pre-AI; the
+      UNESCO AI-CFT is ethically differentiated but lacks a legal grounding; the EU AI Act is binding law but not a
+      competence language; the OECD/EU AILit Framework is learner-centred but has no professional-role dimension.
+      DACT translates these five perspectives into one shared structure.
+    </span>
+  </div>
+</section>
+
+<section>
+  <h2><span data-de>2 · Die sechs DACT-Kompetenzbereiche</span><span data-en>2 · The Six DACT Competency Areas</span></h2>
+  <table class="progression">
+    <tr>
+      <th data-de>#</th><th data-en>#</th>
+      <th><span data-de>Bereich</span><span data-en>Area</span></th>
+      <th><span data-de>Kernidee</span><span data-en>Core Idea</span></th>
+      <th><span data-de>Primäre Quellrahmen</span><span data-en>Primary Source Frameworks</span></th>
+    </tr>
+    <tr><td>1</td><td><span data-de>Digital-Pädagogisches Design &amp; KI-integrierter Unterricht (DPT)</span><span data-en>Digital-Pedagogical Design &amp; AI-Integrated Teaching (DPT)</span></td>
+        <td><span data-de>Lernumgebungen sinnvoll mit KI gestalten, ohne pädagogisches Urteil zu delegieren</span><span data-en>Designing learning environments that meaningfully integrate AI without delegating pedagogical judgement</span></td>
+        <td>TPACK/I-TPACK · DigCompEdu 3&amp;5 · UNESCO AI-CFT 4</td></tr>
+    <tr><td>2</td><td><span data-de>KI-Literalität &amp; kritische Technikbewertung (ALCE)</span><span data-en>AI Literacy &amp; Critical Technology Evaluation (ALCE)</span></td>
+        <td><span data-de>Verstehen, wie KI funktioniert, und dies kritisch weitervermitteln</span><span data-en>Understanding how AI works and teaching that critical understanding onward</span></td>
+        <td>Long &amp; Magerko 2020 · UNESCO AI-CFT 3 · EU AI Act Art. 4</td></tr>
+    <tr><td>3</td><td><span data-de>Ethik, Data Governance &amp; Rechtskonformität (EDGL)</span><span data-en>Ethics, Data Governance &amp; Legal Compliance (EDGL)</span></td>
+        <td><span data-de>Ethische Prinzipien und rechtliche Pflichten in habituelle Praxis überführen</span><span data-en>Turning ethical principles and legal obligations into habituated practice</span></td>
+        <td>UNESCO AI-CFT 1&amp;2 · KMK 2024 §2.2–2.3 · EU AI Act</td></tr>
+    <tr><td>4</td><td><span data-de>Informatische Grundbildung &amp; Computational Thinking (IFCT)</span><span data-en>Informatics Foundations &amp; Computational Thinking (IFCT)</span></td>
+        <td><span data-de>Strukturverständnis digitaler Systeme als Basis kritischer KI-Erklärung</span><span data-en>Structural understanding of digital systems as the basis for explaining AI critically</span></td>
+        <td>Wing 2006 · CAS/ISTE-CSTA · Dagstuhl-Dreieck (KMK 2021)</td></tr>
+    <tr><td>5</td><td><span data-de>Innovative Leistungsbewertung &amp; Learning Analytics (AILA)</span><span data-en>Assessment Innovation &amp; Learning Analytics (AILA)</span></td>
+        <td><span data-de>Menschliche Letztverantwortung in KI-gestützter Bewertung wahren</span><span data-en>Preserving human accountability in AI-supported assessment</span></td>
+        <td>DigCompEdu 4 · KMK 2024 §2.4 · EU AI Act Annex III §3(b–c)</td></tr>
+    <tr><td>6</td><td><span data-de>Offene Praxis, Kollaboration &amp; institutionelle Führung (OPCI)</span><span data-en>Open Practice, Collaboration &amp; Institutional Leadership (OPCI)</span></td>
+        <td><span data-de>Vernetzte, offene Professionalität als Norm — und Schutz vor Deprofessionalisierung</span><span data-en>Networked, open professionalism as the norm — and a safeguard against deprofessionalization</span></td>
+        <td>DigCompEdu 1&amp;2 · UNESCO AI-CFT 5 · OECD/EU 2026</td></tr>
+  </table>
+
+  <h3><span data-de>Progressionsmodell</span><span data-en>Progression Model</span></h3>
+  <table class="progression">
+    <tr>
+      <th><span data-de>DACT-Niveau</span><span data-en>DACT Level</span></th>
+      <th><span data-de>Analogie</span><span data-en>Analogue</span></th>
+      <th><span data-de>Haltung</span><span data-en>Stance</span></th>
+    </tr>
+    <tr><td><span data-de>Level 1 – Grundlagen</span><span data-en>Level 1 – Foundation</span></td>
+        <td>UNESCO: Acquire / DigCompEdu: Newcomer–Explorer</td>
+        <td><span data-de>Verstehen, Bewusstsein, erste Anwendung in strukturierten Settings</span><span data-en>Understanding, awareness, initial application in structured settings</span></td></tr>
+    <tr><td><span data-de>Level 2 – Angewandt</span><span data-en>Level 2 – Applied</span></td>
+        <td>UNESCO: Deepen / DigCompEdu: Integrator–Expert</td>
+        <td><span data-de>Kritische Integration, kontextuelle Anpassung, Mentoring</span><span data-en>Critical integration, contextual adaptation, mentoring</span></td></tr>
+    <tr><td><span data-de>Level 3 – Expert:in</span><span data-en>Level 3 – Expert</span></td>
+        <td>UNESCO: Create / DigCompEdu: Leader–Pioneer</td>
+        <td><span data-de>Innovation, Ko-Kreation, Führung, Policy-Beitrag</span><span data-en>Innovation, co-creation, leadership, policy contribution</span></td></tr>
+  </table>
+</section>
+
+<section>
+  <h2><span data-de>3 · Interaktiver Crosswalk</span><span data-en>3 · Interactive Crosswalk</span></h2>
+  <p class="lead">
+    <span data-de>🖱️ <strong>Bereich wählen → Niveau-Regler bewegen → fünf Rahmenwerke vergleichen.</strong>
+    Das ist das Herzstück: Jeder DACT-Kompetenzbereich lässt sich auf drei Niveaus zeitgleich in
+    DigCompEdu, UNESCO AI-CFT, KMK, EU AI Act und dem neuen OECD/EU-AILit-Framework nachlesen — inklusive der
+    gemeinsamen inhaltlichen Klammer, die DACT aus der Konvergenz dieser Quellen ableitet.</span>
+    <span data-en>🖱️ <strong>Choose an area → move the level slider → compare five frameworks.</strong>
+    This is the heart of the page: every DACT competency area can be read simultaneously across three levels in
+    DigCompEdu, the UNESCO AI-CFT, KMK, the EU AI Act, and the new OECD/EU AILit Framework — including the shared
+    substantive core that DACT derives from the convergence of these sources.</span>
+  </p>
+
+  <div id="crosswalk-app">
+    <div class="cw-label"><span data-de>DACT-Bereich wählen:</span><span data-en>Choose a DACT area:</span></div>
+    <div id="cw-areas"></div>
+
+    <div class="cw-stagebar">
+      <div id="cw-stagename">–</div>
+      <input type="range" id="cw-stage" min="0" max="2" step="1" value="0">
+      <div class="cw-stagelabels">
+        <span data-de>Grundlagen</span><span data-en class="cw-en-only">Foundation</span>
+        <span data-de>Angewandt</span><span data-en class="cw-en-only">Applied</span>
+        <span data-de>Expert:in</span><span data-en class="cw-en-only">Expert</span>
+      </div>
+    </div>
+
+    <div class="cw-grid" id="cw-cols">
+      <div class="cw-col" id="cw-col-digcompedu" style="border-top-color:#003399;"></div>
+      <div class="cw-col" id="cw-col-unesco"      style="border-top-color:#0077c8;"></div>
+      <div class="cw-col" id="cw-col-kmk"         style="border-top-color:#2a4090;"></div>
+      <div class="cw-col" id="cw-col-aiact"       style="border-top-color:#a83232;"></div>
+      <div class="cw-col" id="cw-col-oecd"        style="border-top-color:#2e7d32;"></div>
+    </div>
+
+    <div class="cw-synth">
+      <strong>🔗 <span data-de>DACT-Synthese — der gemeinsame Kern</span><span data-en>DACT Synthesis — the shared core</span>:</strong><br>
+      <span id="cw-synth-de" data-de>–</span><span id="cw-synth-en" data-en>–</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2><span data-de>4 · Wie man die Übersicht liest</span><span data-en>4 · How to Read This Overview</span></h2>
+  <div class="ok-box">
+    <span data-de>
+      Die drei Niveaus entsprechen nicht 1:1 den Stufenmodellen der Quellrahmen (DigCompEdu hat sechs, ICT-CFT und
+      UNESCO AI-CFT je drei). DACT bildet bewusst <strong>qualitative Sprünge</strong> ab, nicht feingranulare
+      Teilschritte — mit optionaler interner Unterteilung (1a/1b, 2a/2b) für Fälle, in denen diagnostische Präzision
+      gebraucht wird. Jede Spalte im Crosswalk zeigt daher die <em>inhaltliche Entsprechung</em> auf dem gewählten
+      DACT-Niveau, nicht eine exakte Stufen-zu-Stufen-Übersetzung.
+    </span>
+    <span data-en>
+      The three levels do not map 1:1 onto the source frameworks' own stage models (DigCompEdu has six stages,
+      the ICT-CFT and UNESCO AI-CFT three each). DACT deliberately captures <strong>qualitative shifts</strong>
+      rather than fine-grained sub-steps, with optional internal sub-differentiation (1a/1b, 2a/2b) where
+      diagnostic precision is required. Each column in the crosswalk therefore shows the <em>substantive
+      correspondence</em> at the chosen DACT level, not an exact stage-to-stage translation.
+    </span>
+  </div>
+</section>
+
+</div>
+
+<footer>
+  <span data-de>DACT-Framework v1.0 · Arbeitskreis Digitalisierung im Lehramt · ZLB · OVGU Magdeburg · Juni 2026 · Interaktive Visualisierung</span>
+  <span data-en>DACT Framework v1.0 · Arbeitskreis Digitalisierung im Lehramt · ZLB · OVGU Magdeburg · June 2026 · Interactive Visualisation</span>
+</footer>
+
+<script>
+(function(){
+  var STAGENAMES = {
+    de: ['Grundlagen — Bewusstsein & Erstanwendung','Angewandt — kritische Integration & Mentoring','Expert:in — Innovation & Führung'],
+    en: ['Foundation — awareness & initial use','Applied — critical integration & mentoring','Expert — innovation & leadership']
+  };
+  var COLNAMES = {digcompedu:'🇪🇺 DigCompEdu', unesco:'🌍 UNESCO AI-CFT', kmk:'🇩🇪 KMK 2021/24', aiact:'⚖️ EU AI Act', oecd:'🌐 OECD/EU AILit 2026'};
+  var COLS = ['digcompedu','unesco','kmk','aiact','oecd'];
+
+  var AREAS = [
+  {
+    id:'dpt', label:{de:'① 🎓 Digital-Päd. Design & KI-Unterricht', en:'① 🎓 Digital-Pedagogical Design & AI Teaching'},
+    digcompedu:[
+      {de:'Areas 3 & 5: Digitale Werkzeuge zur direkten Unterstützung von Lehr-Lernprozessen einsetzen; Zugänglichkeit und Differenzierung als Ausgangspunkt.', en:'Areas 3 & 5: Using digital tools to directly support teaching and learning; accessibility and differentiation as the starting point.', tags:['Teaching & Learning','Newcomer–Explorer']},
+      {de:'Guidance, kollaboratives und selbstreguliertes Lernen aktiv orchestrieren; Empowering-Learners-Strategien kritisch anpassen.', en:'Actively orchestrating guidance, collaborative and self-regulated learning; critically adapting empowering-learners strategies.', tags:['Guidance','Integrator–Expert']},
+      {de:'Innovative, technologiegestützte Lernszenarien gestalten und institutionell verankern; Policy und Praxis mitprägen.', en:'Designing and institutionally embedding innovative technology-supported learning scenarios; shaping both policy and practice.', tags:['Leadership','Leader–Pioneer']}
+    ],
+    unesco:[
+      {de:'4.1 AI-Assisted Teaching: KI-Tools für Unterrichtsvorbereitung identifizieren; Design-Implementierungs-Reflexions-Zyklus anwenden.', en:'4.1 AI-Assisted Teaching: identifying AI tools for lesson planning; applying the design–implementation–reflection cycle.', tags:['4.1 Acquire']},
+      {de:'4.2 AI–Pedagogy Integration: KI in schüler:innenzentrierte Praxis einbetten; menschlich verantwortete Entscheidungsschleifen sichern.', en:'4.2 AI–Pedagogy Integration: embedding AI in student-centred practice; securing human-accountable decision loops.', tags:['4.2 Deepen']},
+      {de:'4.3 AI-Enhanced Innovation: triangulare Lehrer-Schüler-KI-Interaktionen gestalten; KI für Learning Analytics und Curriculum-Ko-Kreation nutzen.', en:'4.3 AI-Enhanced Innovation: designing triangular teacher–student–AI interactions; using AI for learning analytics and curriculum co-creation.', tags:['4.3 Create']}
+    ],
+    kmk:[
+      {de:'KMK 2021 §1 / 2024 §2.4: KI-gestützte, differenzierte Lehr-Lernsettings unter Beibehaltung des sozialen Lernens gestalten.', en:'KMK 2021 §1 / 2024 §2.4: designing AI-supported, differentiated teaching settings while preserving social learning.', tags:['§1, §2.4']},
+      {de:'Evidenzbasierte Entscheidungen für UND gegen KI-Einsatz treffen; adaptive Diagnostik anwenden.', en:'Making evidence-based decisions for AND against AI use; applying adaptive diagnostics.', tags:['§2.4']},
+      {de:'Ko-Aktivität mit KI als demonstrierbare 4K-Kompetenz in Aufgaben verankern; Innovation in Fachdidaktiken anstoßen.', en:'Embedding co-activity with AI as a demonstrable 4K competence in tasks; driving innovation in subject didactics.', tags:['§2.4 4K']}
+    ],
+    aiact:[
+      {de:'Art. 14: Grundverständnis menschlicher Aufsicht über KI-Systeme im Unterrichtskontext.', en:'Art. 14: basic understanding of human oversight over AI systems in the teaching context.', tags:['Art. 14']},
+      {de:'Art. 14 vertieft: Fähigkeit, KI-Outputs zu interpretieren, Automatisierungsbias zu widerstehen und einzugreifen.', en:'Art. 14 in depth: ability to interpret AI outputs, resist automation bias, and intervene.', tags:['Art. 14']},
+      {de:'Art. 26 (Deployer-Pflichten): institutionelle Aufsichtsstrukturen mitgestalten; Schulungspflichten für Kolleg:innen sicherstellen.', en:'Art. 26 (deployer duties): co-designing institutional oversight structures; ensuring training obligations for colleagues.', tags:['Art. 26']}
+    ],
+    oecd:[
+      {de:'Engage/Manage AI (S. 26–41): KI-Einsatz aufgabenbezogen entscheiden; erste Nutzung als Denkpartner in strukturierten Aufgaben.', en:'Engage/Manage AI (pp. 26–41): deciding on AI use in a task-appropriate way; first use as a thinking partner in structured tasks.', tags:['Manage AI']},
+      {de:'Create/Manage AI vertieft: Probleme dekomponieren, KI-Einsatz im Prozess überwachen und bewerten.', en:'Create/Manage AI in depth: decomposing problems, monitoring and evaluating AI use throughout the process.', tags:['Create AI']},
+      {de:'Shape AI (S. 40–43): KI-Systeme im Bildungskontext evaluieren und mitgestalten, ausgerichtet auf gesellschaftlichen Nutzen.', en:'Shape AI (pp. 40–43): evaluating and helping design AI systems in education, oriented toward societal benefit.', tags:['Shape AI']}
+    ],
+    synth:{
+      de:'Alle fünf Rahmen bewegen sich vom strukturierten Einzeltool-Einsatz (Grundlagen) über kritisch-adaptive Integration (Angewandt) hin zu Ko-Kreation und Innovation (Expert:in). TPACK/I-TPACK liefert die theoretische Brücke, warum diese Progression pädagogisch — nicht nur technisch — begründet ist: Technologieentscheidungen bleiben immer an Content und Pedagogy rückgebunden.',
+      en:'All five frameworks move from structured single-tool use (Foundation) through critically adaptive integration (Applied) to co-creation and innovation (Expert). TPACK/I-TPACK supplies the theoretical bridge for why this progression is pedagogically — not merely technically — grounded: technology decisions always remain tied back to content and pedagogy.'
+    }
+  },
+  {
+    id:'alce', label:{de:'② 🧠 KI-Literalität & kritische Bewertung', en:'② 🧠 AI Literacy & Critical Evaluation'},
+    digcompedu:[
+      {de:'Supplement 2.3: Grundverständnis, wie generative KI, adaptive Systeme und ITS funktionieren; pädagogische Qualität von KI-Content einschätzen.', en:'Supplement 2.3: basic understanding of how generative AI, adaptive systems, and ITS work; assessing the pedagogical quality of AI content.', tags:['Supplement 2.3']},
+      {de:'KI-gestützte Such- und Empfehlungssysteme kritisch nutzen; Urheberrechts- und Datenschutzfragen bei KI-Content erkennen.', en:'Critically using AI-supported search and recommendation systems; recognising copyright and privacy issues in AI content.', tags:['Supplement 2.2–2.3']},
+      {de:'KI-Ressourcen institutionsweit kuratieren und verantwortungsvoll teilen; Qualitätsstandards mitentwickeln.', en:'Curating AI resources institution-wide and sharing them responsibly; helping develop quality standards.', tags:['Supplement 2.2']}
+    ],
+    unesco:[
+      {de:'3.1 Basic Techniques: Daten, Algorithmen, Training und Deployment konzeptuell verstehen; symbolische, prädiktive und generative KI unterscheiden.', en:'3.1 Basic Techniques: conceptually understanding data, algorithms, training, and deployment; distinguishing symbolic, predictive, and generative AI.', tags:['3.1 Acquire']},
+      {de:'3.2 Application Skills: Trainingsdaten und Modellarchitektur eines gewählten Systems (z. B. LLM) vertieft verstehen; Ethics-by-Design prüfen.', en:'3.2 Application Skills: understanding in depth the training data and model architecture of a chosen system (e.g. an LLM); assessing ethics-by-design.', tags:['3.2 Deepen']},
+      {de:'3.3 Creating with AI: Tools anpassen/feinabstimmen; institutionelle Repositorien geprüfter KI-Werkzeuge mitaufbauen.', en:'3.3 Creating with AI: customising/fine-tuning tools; helping build institutional repositories of vetted AI tools.', tags:['3.3 Create']}
+    ],
+    kmk:[
+      {de:'§2.1: Grundfunktion von LLMs und generativer KI kennen; Anwendungstypen unterscheiden.', en:'§2.1: knowing the basic functioning of LLMs and generative AI; distinguishing application types.', tags:['§2.1']},
+      {de:'§2.1 vertieft: verstehen, warum aktuelle generative KI nicht für Bildungskontexte konzipiert wurde — mit Konsequenzen für die Praxis.', en:'§2.1 in depth: understanding why current generative AI was not designed for educational contexts — with practical consequences.', tags:['§2.1']},
+      {de:'Beitrag zu schulischem/hochschulischem KI-Kompetenzaufbau; Multiplikator:innenrolle in Fortbildung.', en:'Contributing to school/university-level AI competence building; acting as a multiplier in professional development.', tags:['§2.1, §2.5']}
+    ],
+    aiact:[
+      {de:'Art. 4: rechtlich verankerte Pflicht zur „ausreichenden KI-Literalität" — Grundlagenwissen als Minimum.', en:'Art. 4: legally anchored duty of "sufficient AI literacy" — foundational knowledge as the minimum.', tags:['Art. 4']},
+      {de:'Art. 4 vertieft: Literalität im Verhältnis zu technischem Wissen, Erfahrung, Ausbildung und Einsatzkontext differenzieren.', en:'Art. 4 in depth: differentiating literacy relative to technical knowledge, experience, education, and context of use.', tags:['Art. 4']},
+      {de:'Institutionelle Umsetzung von Art. 4 mitgestalten; KI-Literalitäts-Schulungen für Kolleg:innen konzipieren.', en:'Helping implement Art. 4 institutionally; designing AI-literacy training for colleagues.', tags:['Art. 4, Art. 26']}
+    ],
+    oecd:[
+      {de:'Engage with AI, Komp. 1–2 (S. 26–29): erkennen, wo KI wirkt; nicht-anthropomorphe Sprache zur Beschreibung von KI verwenden.', en:'Engage with AI, comp. 1–2 (pp. 26–29): recognising where AI operates; using non-anthropomorphic language to describe AI.', tags:['Engage 1–2']},
+      {de:'Engage with AI, Komp. 3–5 (S. 29–31): KI-Outputs bewerten; prädiktive Empfehlungssysteme und Ressourcenverbrauch vergleichen.', en:'Engage with AI, comp. 3–5 (pp. 29–31): evaluating AI outputs; comparing predictive recommendation systems and resource consumption.', tags:['Engage 3–5']},
+      {de:'Engage with AI, Komp. 6–7 (S. 31–33): gesellschaftliche Bias-Verstärkung und ethische Passung von KI-Nutzung analysieren.', en:'Engage with AI, comp. 6–7 (pp. 31–33): analysing societal bias amplification and the ethical fit of AI use.', tags:['Engage 6–7']}
+    ],
+    synth:{
+      de:'Long & Magerko (2020) liefern den begrifflichen Unterbau: KI erkennen, verstehen, kritisch bewerten, zielgerichtet nutzen. Der EU AI Act macht daraus in Art. 4 eine Rechtspflicht — DACT übersetzt diese Pflicht in ein dreistufiges, lehrendenspezifisches Kompetenzprofil, das UNESCO Area 3, DigCompEdu-Supplement 2.3 und das OECD-Engage-Domain bündelt.',
+      en:'Long & Magerko (2020) provide the conceptual grounding: recognising, understanding, critically evaluating, and purposefully using AI. Art. 4 of the EU AI Act turns this into a legal duty — DACT translates that duty into a three-level, teacher-specific competence profile bundling UNESCO Area 3, DigCompEdu Supplement 2.3, and the OECD Engage domain.'
+    }
+  },
+  {
+    id:'edgl', label:{de:'③ ⚖️ Ethik, Data Governance & Recht', en:'③ ⚖️ Ethics, Governance & Legal Compliance'},
+    digcompedu:[
+      {de:'Supplement 2.1/2.5: ethisches Bewusstsein für Datenschutz, Bias und Fairness bei KI-Tools entwickeln.', en:'Supplement 2.1/2.5: developing ethical awareness of privacy, bias, and fairness in AI tools.', tags:['Supplement 2.1']},
+      {de:'Bias erkennen; verantwortungsvolle Nutzungspraktiken konsequent im Lehrworkflow anwenden.', en:'Recognising bias; consistently applying responsible-use practices in the teaching workflow.', tags:['Supplement 2.4–2.5']},
+      {de:'Institutionsweite Kultur verantwortungsvoller KI-Nutzung mitgestalten; Richtlinien mitentwickeln.', en:'Helping shape an institution-wide culture of responsible AI use; co-developing guidelines.', tags:['Supplement 2.1']}
+    ],
+    unesco:[
+      {de:'1.1/2.1: menschliche Agency erkennen; sechs Kernprinzipien (Non-Harm, Proportionalität, Nicht-Diskriminierung, Nachhaltigkeit, Transparenz) verstehen.', en:'1.1/2.1: recognising human agency; understanding six core principles (non-harm, proportionality, non-discrimination, sustainability, transparency).', tags:['1.1, 2.1 Acquire']},
+      {de:'1.2/2.2: menschliche Rechenschaftspflicht als rechtliche Verpflichtung anwenden; Datenschutz über den gesamten Lebenszyklus sichern.', en:'1.2/2.2: applying human accountability as a legal obligation; safeguarding data protection across the full lifecycle.', tags:['1.2, 2.2 Deepen']},
+      {de:'1.3/2.3: gesellschaftliche Implikationen kritisch bewerten; an Ko-Kreation ethischer Regeln und Policy mitwirken.', en:'1.3/2.3: critically evaluating societal implications; contributing to co-creating ethical rules and policy.', tags:['1.3, 2.3 Create']}
+    ],
+    kmk:[
+      {de:'§2.2: Chancen, Grenzen und Risiken von KI-Tools akkurat einschätzen; Medienethik anwenden.', en:'§2.2: accurately assessing the opportunities, limits, and risks of AI tools; applying media ethics.', tags:['§2.2']},
+      {de:'§2.3: DSGVO/EU-AI-Act-Rahmen kennen (inkl. Art. 22 — kein vollautomatisiertes Entscheiden über Schüler:innen); Compliance sichern.', en:'§2.3: knowing the GDPR/EU AI Act framework (incl. Art. 22 — no fully automated decisions about students); ensuring compliance.', tags:['§2.3']},
+      {de:'Institutionelle Fehlerkultur und offenen KI-Diskurs mitgestalten; Regelwerke mitentwickeln.', en:'Helping shape an institutional error-tolerant culture and open AI discourse; co-developing rule frameworks.', tags:['§2.5']}
+    ],
+    aiact:[
+      {de:'Art. 5(1)(b), (f): Verbote kennen — Ausnutzung von Vulnerabilität (z. B. Alter), Emotionserkennung in Bildungseinrichtungen.', en:'Art. 5(1)(b), (f): knowing the prohibitions — exploitation of vulnerabilities (e.g. age), emotion recognition in educational institutions.', tags:['Art. 5']},
+      {de:'Art. 14, 26: menschliche Aufsicht und Deployer-Pflichten (Monitoring, Lerner:innen-Information) operationalisieren.', en:'Art. 14, 26: operationalising human oversight and deployer duties (monitoring, informing learners).', tags:['Art. 14, 26']},
+      {de:'Art. 27: Grundrechte-Folgenabschätzungen für Hochrisiko-Systeme (mit)verantworten; Audit von Anbieter-Guidance.', en:'Art. 27: co-responsible for fundamental rights impact assessments for high-risk systems; auditing provider guidance.', tags:['Art. 27']}
+    ],
+    oecd:[
+      {de:'Ethik als Querschnittsprinzip (S. 15–17): Transparenz, Fairness, Privatsphäre, Umweltverantwortung in jede Domäne einbetten.', en:'Ethics as a cross-cutting principle (pp. 15–17): embedding transparency, fairness, privacy, and environmental responsibility into every domain.', tags:['Ethics-woven']},
+      {de:'Attitudes „Verantwortlich" und „Empathisch": bewusst über Nicht-Nutzung entscheiden; Wohlergehen anderer mitdenken.', en:'"Responsible" and "Empathetic" attitudes: deliberately deciding against use; considering others\' wellbeing.', tags:['Attitudes']},
+      {de:'Shape AI, Komp. 3–4 (S. 42–43): Datenherkunft und Informationsfluss von KI-Systemen kritisch gestalten; Wohlergehen priorisieren.', en:'Shape AI, comp. 3–4 (pp. 42–43): critically designing the data provenance and information flow of AI systems; prioritising wellbeing.', tags:['Shape AI']}
+    ],
+    synth:{
+      de:'Datenschutz und menschliche Letztverantwortung sind das gemeinsame Rückgrat. UNESCO widmet der Ethik einen eigenen Kompetenzbereich; KMK benennt DSGVO und EU AI Act explizit; DigCompEdu macht ethisches Bewusstsein zur Querschnittskompetenz; der EU AI Act liefert die bindende Rechtsgrundlage (Art. 4, 5, 14, 26, 27); OECD/EU webt Ethik durch alle vier Domänen statt sie zu isolieren.',
+      en:'Data protection and final human accountability form the shared backbone. UNESCO devotes an entire competency area to ethics; KMK names GDPR and the EU AI Act explicitly; DigCompEdu makes ethical awareness a cross-cutting competence; the EU AI Act supplies the binding legal basis (Art. 4, 5, 14, 26, 27); OECD/EU weaves ethics through all four domains rather than isolating it.'
+    }
+  },
+  {
+    id:'ifct', label:{de:'④ 💻 Informatik-Grundlagen & CT', en:'④ 💻 Informatics Foundations & CT'},
+    digcompedu:[
+      {de:'Kein direktes Äquivalent — implizit über digitale Ressourcenkompetenz (Area 2) und Grundfertigkeiten.', en:'No direct equivalent — implicit via digital resource competence (Area 2) and basic skills.', tags:['implizit']},
+      {de:'Weiterhin implizit; DigComp 2.2 Area 5 (Problem-Solving) liefert die nächstliegende Brücke.', en:'Still implicit; DigComp 2.2 Area 5 (Problem-Solving) provides the closest bridge.', tags:['DigComp 2.2 A5']},
+      {de:'Kein expliziter Leadership-Bezug zu Informatik-Grundbildung im DigCompEdu-Modell.', en:'No explicit leadership reference to informatics foundations in the DigCompEdu model.', tags:['—']}
+    ],
+    unesco:[
+      {de:'ICT-CFT Area 4 (L1): grundlegende digitale Werkzeuge bedienen; Bewusstsein für digitale Staatsbürgerschaft.', en:'ICT-CFT Area 4 (L1): operating basic digital tools; awareness of digital citizenship.', tags:['ICT-CFT L1']},
+      {de:'ICT-CFT Area 4 (L2): fachspezifische digitale Kompetenzen vertiefen; algorithmische Grundmuster erkennen.', en:'ICT-CFT Area 4 (L2): deepening subject-specific digital skills; recognising basic algorithmic patterns.', tags:['ICT-CFT L2']},
+      {de:'ICT-CFT Area 4 (L3): innovative digitale Lernressourcen mit fortgeschrittenen Werkzeugen erstellen; Peers anleiten.', en:'ICT-CFT Area 4 (L3): creating innovative digital learning resources with advanced tools; guiding peers.', tags:['ICT-CFT L3']}
+    ],
+    kmk:[
+      {de:'§1.2 (Dagstuhl-Dreieck): algorithmische Grundstrukturen und Prinzipien digitaler Technologien verstehen.', en:'§1.2 (Dagstuhl Triangle): understanding basic algorithmic structures and principles of digital technologies.', tags:['§1.2']},
+      {de:'Computational Thinking fächerübergreifend anwenden; digitalisierungsbezogene Kompetenzen in Fachcurricula integrieren.', en:'Applying computational thinking across disciplines; integrating digitalisation-related competences into subject curricula.', tags:['§1.2']},
+      {de:'Spiralcurriculare Weitergabe von CT an angehende Lehrkräfte über alle Schulstufen hinweg gestalten.', en:'Designing the spiral-curricular transmission of CT to pre-service teachers across all school levels.', tags:['§1.2']}
+    ],
+    aiact:[
+      {de:'Kein direkter Artikel — informatisches Grundverständnis ist Voraussetzung für Art. 4 (KI-Literalität).', en:'No direct article — informatics foundations are a precondition for Art. 4 (AI literacy).', tags:['Vorbedingung f. Art. 4']},
+      {de:'Weiterhin indirekt: algorithmisches Verständnis unterstützt die geforderte Fähigkeit zur Output-Interpretation (Art. 14).', en:'Still indirect: algorithmic understanding supports the output-interpretation capacity required under Art. 14.', tags:['unterstützt Art. 14']},
+      {de:'Kein spezifischer Rechtsbezug auf Expert:innen-Ebene.', en:'No specific legal reference at the expert level.', tags:['—']}
+    ],
+    oecd:[
+      {de:'Computational-Thinking-Skill (S. 22–24): Dekomposition, Abstraktion, Mustererkennung als Kernkompetenz für KI-Verständnis.', en:'Computational Thinking skill (pp. 22–24): decomposition, abstraction, pattern recognition as core competence for understanding AI.', tags:['CT Skill']},
+      {de:'Computational Thinking vertieft: Probleme so formulieren, dass KI sie sinnvoll unterstützen kann.', en:'Computational Thinking in depth: framing problems so that AI can meaningfully assist.', tags:['CT Skill']},
+      {de:'Shape AI, Komp. 1–2 (S. 40–41): untersuchen, wie ein KI-System konzipiert ist und für wen; Systeme mit Testfällen bewerten.', en:'Shape AI, comp. 1–2 (pp. 40–41): investigating how an AI system is designed and for whom; evaluating systems with test cases.', tags:['Shape AI']}
+    ],
+    synth:{
+      de:'Dieser Bereich ist am stärksten technisch geprägt und hat — anders als die anderen fünf — kein direktes DigCompEdu- oder EU-AI-Act-Pendant; DACT schließt hier bewusst eine Lücke, die Wing (2006), CAS/ISTE-CSTA und das Dagstuhl-Dreieck (KMK 2021) sowie die neue OECD-CT-Kompetenz füllen. Ohne informatisches Grundverständnis bleibt KI-Literalität (Bereich 2) oberflächlich.',
+      en:'This area is the most technically oriented and — unlike the other five — has no direct DigCompEdu or EU AI Act counterpart; DACT deliberately closes a gap here, filled by Wing (2006), CAS/ISTE-CSTA, the Dagstuhl Triangle (KMK 2021), and the new OECD CT competence. Without informatics foundations, AI literacy (Area 2) remains superficial.'
+    }
+  },
+  {
+    id:'aila', label:{de:'⑤ 📊 Leistungsbewertung & Learning Analytics', en:'⑤ 📊 Assessment Innovation & Analytics'},
+    digcompedu:[
+      {de:'Area 4.1: digitale Assessmentstrategien kennenlernen; Grundformen KI-assistierter Bewertung anwenden.', en:'Area 4.1: getting to know digital assessment strategies; applying basic forms of AI-assisted grading.', tags:['4.1']},
+      {de:'Area 4.2–4.3: Evidenzen analysieren; personalisiertes, zeitnahes Feedback mit Retention pädagogischen Urteils gestalten.', en:'Area 4.2–4.3: analysing evidence; designing personalised, timely feedback while retaining pedagogical judgement.', tags:['4.2–4.3']},
+      {de:'Innovative KI-basierte Assessmentformate (game-, simulations-, projektbasiert) entwickeln.', en:'Developing innovative AI-based assessment formats (game-, simulation-, project-based).', tags:['Supplement 2.4']}
+    ],
+    unesco:[
+      {de:'4.1: AI-Tools für formative Diagnostik identifizieren; grundlegende Nutzung mit Beibehaltung menschlicher Letztentscheidung.', en:'4.1: identifying AI tools for formative diagnostics; basic use while retaining the final human decision.', tags:['4.1']},
+      {de:'4.2: Human-accountable Decision Loops implementieren; Automatisierung hochriskanter Entscheidungen aktiv gegensteuern.', en:'4.2: implementing human-accountable decision loops; actively countering automation of high-stakes decisions.', tags:['4.2']},
+      {de:'4.3: Learning Analytics für adaptives Lehren nutzen; mit Curriculum-Entwickler:innen Ressourcen ko-kreieren.', en:'4.3: using learning analytics for adaptive teaching; co-creating resources with curriculum developers.', tags:['4.3']}
+    ],
+    kmk:[
+      {de:'§2.4: KI-assistierte Diagnostik für formative Bewertung einführen; pädagogisches Letzturteil bewahren.', en:'§2.4: introducing AI-assisted diagnostics for formative assessment; preserving final pedagogical judgement.', tags:['§2.4']},
+      {de:'§2.4 vertieft: Ko-Aktivität mit KI als reflektierbare 4K-Kompetenz in Prüfungsaufgaben verankern.', en:'§2.4 in depth: embedding co-activity with AI as a reflectable 4K competence in assessment tasks.', tags:['§2.4']},
+      {de:'Fortbildungsprogramme zu verantwortungsvoller Learning-Analytics-Nutzung leiten.', en:'Leading professional development programmes on responsible use of learning analytics.', tags:['§2.4/2.5']}
+    ],
+    aiact:[
+      {de:'Annex III §3(b)–(c): Bewusstsein, dass Lernstands-/Zugangsbewertungssysteme als Hochrisiko-KI gelten.', en:'Annex III §3(b)–(c): awareness that learning-outcome/access assessment systems count as high-risk AI.', tags:['Annex III']},
+      {de:'Art. 14, 26: Monitoring- und Aufsichtspflichten für Hochrisiko-Assessment-Systeme umsetzen.', en:'Art. 14, 26: implementing monitoring and oversight duties for high-risk assessment systems.', tags:['Art. 14, 26']},
+      {de:'Art. 27: Folgenabschätzungen für Hochrisiko-Assessment-KI leiten; institutionelle Compliance-Programme entwickeln.', en:'Art. 27: leading impact assessments for high-risk assessment AI; developing institutional compliance programmes.', tags:['Art. 27']}
+    ],
+    oecd:[
+      {de:'Manage AI, Komp. 1 (S. 36–37): entscheiden, ob KI für eine Bewertungsaufgabe angemessen ist.', en:'Manage AI, comp. 1 (pp. 36–37): deciding whether AI is appropriate for an assessment task.', tags:['Manage AI']},
+      {de:'Manage AI, Komp. 3–4 (S. 38–40): Bewertungsprozess dekomponieren; KI-Einsatz im Verlauf überwachen und evaluieren.', en:'Manage AI, comp. 3–4 (pp. 38–40): decomposing the assessment process; monitoring and evaluating AI use throughout.', tags:['Manage AI']},
+      {de:'Create with AI, Komp. 4 (S. 34–35): Authentizität und geistiges Eigentum bei KI-unterstützter Schülerarbeit prüfen.', en:'Create with AI, comp. 4 (pp. 34–35): examining authenticity and intellectual property in AI-assisted student work.', tags:['Create AI']}
+    ],
+    synth:{
+      de:'Der EU AI Act zieht hier die schärfste rechtliche Grenze im gesamten DACT-Framework: Annex III §3(b)–(c) macht Lernstandsbewertung explizit zur Hochrisiko-Kategorie. DigCompEdu Area 4 und UNESCO Area 4 liefern die pädagogische Gestaltungssprache; KMK §2.4 übersetzt dies in die 4K-Ko-Aktivitäts-Idee; OECD/EU Manage-AI-Domäne liefert die Entscheidungslogik, wann KI in Bewertungsprozessen überhaupt angemessen ist.',
+      en:'The EU AI Act draws the sharpest legal line anywhere in the DACT framework here: Annex III §3(b)–(c) explicitly classifies learning-outcome assessment as high-risk. DigCompEdu Area 4 and UNESCO Area 4 supply the pedagogical design language; KMK §2.4 translates this into the 4K co-activity idea; the OECD/EU Manage AI domain supplies the decision logic for whether AI belongs in an assessment process at all.'
+    }
+  },
+  {
+    id:'opci', label:{de:'⑥ 🌱 Offene Praxis & Institutionelle Führung', en:'⑥ 🌱 Open Practice & Institutional Leadership'},
+    digcompedu:[
+      {de:'Areas 1&2: organisationale Kommunikation, OER-Nutzung, digitale CPD als Grundpraxis.', en:'Areas 1 & 2: organisational communication, OER use, digital CPD as basic practice.', tags:['1.1–1.4, 2.1']},
+      {de:'Professionelle Kollaboration und OER-Ko-Kreation in Netzwerken; reflektierte Praxis (1.3) als Norm.', en:'Professional collaboration and OER co-creation within networks; reflective practice (1.3) as the norm.', tags:['1.2–1.3']},
+      {de:'Digital-Leadership-Rolle übernehmen; institutionelle Digitalstrategie mitgestalten; OER-Initiativen leiten.', en:'Taking on a digital-leadership role; helping shape institutional digital strategy; leading OER initiatives.', tags:['1.4']}
+    ],
+    unesco:[
+      {de:'5.1: KI-Tools für persönliche CPD identifizieren; persönliches Wissensmanagement mit KI unterstützen.', en:'5.1: identifying AI tools for personal CPD; supporting personal knowledge management with AI.', tags:['5.1 Acquire']},
+      {de:'5.2: über KI-Plattformen mit Peers kollaborieren; IP- und Datenschutzfragen bei gemeinsamer Materialentwicklung klären.', en:'5.2: collaborating with peers via AI platforms; resolving IP and privacy questions in joint material development.', tags:['5.2 Deepen']},
+      {de:'5.3: KI-gestützte CPD-Programme leiten; Kolleg:innen mentoring; institutionelle Policy mitentwickeln.', en:'5.3: leading AI-supported CPD programmes; mentoring colleagues; helping develop institutional policy.', tags:['5.3 Create']}
+    ],
+    kmk:[
+      {de:'§1.4: an schulischer/hochschulischer Digitalentwicklung teilnehmen (5 Dimensionen); Grundpraxis digitaler CPD.', en:'§1.4: participating in school/university digital development (5 dimensions); basic digital-CPD practice.', tags:['§1.4']},
+      {de:'Double-Decker-Prinzip anwenden: eigenes Lernen und Lehren über Digitalität gleichzeitig reflektieren.', en:'Applying the double-decker principle: reflecting simultaneously on one\'s own learning and teaching about digitality.', tags:['§1.4']},
+      {de:'Digital-Leadership auf Institutionsebene übernehmen; inter-institutionelle Netzwerke mitgestalten.', en:'Taking on digital leadership at the institutional level; helping shape inter-institutional networks.', tags:['§1.4']}
+    ],
+    aiact:[
+      {de:'Art. 4 (institutionell): Grundverständnis, dass die eigene Institution zur KI-Literalitäts-Sicherstellung verpflichtet ist.', en:'Art. 4 (institutional): basic understanding that one\'s own institution is obliged to ensure AI literacy.', tags:['Art. 4 inst.']},
+      {de:'Mitwirkung an institutioneller Umsetzung der Art.-4-Pflicht in CPD-Programmen.', en:'Contributing to institutional implementation of the Art. 4 duty within CPD programmes.', tags:['Art. 4']},
+      {de:'Institutionelle Governance-Strukturen für Art.-4-Compliance mitgestalten und leiten.', en:'Helping design and lead institutional governance structures for Art. 4 compliance.', tags:['Art. 4, 26']}
+    ],
+    oecd:[
+      {de:'Rolle der Lehrkräfte (S. 10–12): an koordinierten KI-Literalitätsinitiativen im Kollegium mitwirken.', en:'Role of teachers (pp. 10–12): participating in coordinated AI-literacy initiatives across the staff.', tags:['Roles']},
+      {de:'Rolle der Schulleitung (S. 11): CPD-Investitionen und Community-Partnerschaften mitgestalten.', en:'Role of school leaders (p. 11): helping shape CPD investment and community partnerships.', tags:['Roles']},
+      {de:'Systemebene (S. 12–14): Policy-Beitrag zu nachhaltiger, gerechter KI-Literalitätskultur auf Systemebene leisten.', en:'System level (pp. 12–14): contributing to policy for a sustainable, equitable AI-literacy culture at system level.', tags:['Roles']}
+    ],
+    synth:{
+      de:'Kollaborative, offene Professionalität ist die universellste Idee im gesamten DACT-Framework. Neu gegenüber allen Quellrahmen ist DACTs explizite Warnung vor Deskilling und Deprofessionalisierung (OECD 2026a): Institutionelle Führung (Level 3) trägt hier die Verantwortung, KI konsequent im Augmentations- statt Ersetzungsmodus zu halten — als aktive Gegenmaßnahme, nicht nur als Compliance-Frage zu Art. 14.',
+      en:'Collaborative, open professionalism is the most universal idea across the entire DACT framework. New relative to all source frameworks is DACT\'s explicit warning against deskilling and deprofessionalization (OECD 2026a): institutional leadership (Level 3) carries the responsibility to consistently keep AI in augmentation rather than replacement mode — an active countermeasure, not merely a compliance matter under Art. 14.'
+    }
+  }
+  ];
+
+  var cur = AREAS[0], si = 0, lang = 'de';
+
+  function renderCol(w){
+    var el = document.getElementById('cw-col-' + w);
+    var d = cur[w][si];
+    el.innerHTML =
+      '<div class="cw-col-hd" style="color:#0b5fa8">' + COLNAMES[w] + '</div>' +
+      '<div class="cw-col-lvl">' + STAGENAMES[lang][si] + '</div>' +
+      '<div class="cw-col-txt">' + d[lang] + '</div>' +
+      '<div style="margin-top:8px;">' + d.tags.map(function(t){ return '<span class="cw-tag">' + t + '</span>'; }).join('') + '</div>';
+  }
+
+  function update(){
+    document.getElementById('cw-stagename').textContent = STAGENAMES[lang][si];
+    COLS.forEach(function(w){ renderCol(w); });
+    document.getElementById('cw-synth-de').textContent = cur.synth.de;
+    document.getElementById('cw-synth-en').textContent = cur.synth.en;
+  }
+
+  var areaBar = document.getElementById('cw-areas');
+  AREAS.forEach(function(a, i){
+    var b = document.createElement('button');
+    b.className = 'cw-btn' + (i === 0 ? ' act' : '');
+    b.setAttribute('data-labelde', a.label.de);
+    b.setAttribute('data-labelen', a.label.en);
+    b.textContent = a.label[lang];
+    b.onclick = function(){
+      cur = a; si = 0;
+      document.getElementById('cw-stage').value = 0;
+      document.querySelectorAll('.cw-btn').forEach(function(x){ x.classList.remove('act'); });
+      b.classList.add('act');
+      update();
+    };
+    areaBar.appendChild(b);
+  });
+
+  document.getElementById('cw-stage').addEventListener('input', function(e){
+    si = parseInt(e.target.value, 10);
+    update();
+  });
+
+  window.setLang = function(l){
+    lang = l;
+    document.documentElement.setAttribute('data-lang', l);
+    document.getElementById('btn-de').classList.toggle('act', l === 'de');
+    document.getElementById('btn-en').classList.toggle('act', l === 'en');
+    document.querySelectorAll('#cw-areas .cw-btn').forEach(function(btn){
+      btn.textContent = l === 'de' ? btn.getAttribute('data-labelde') : btn.getAttribute('data-labelen');
+    });
+    update();
+  };
+
+  update();
+})();
+</script>
+
+</body>
+</html>
